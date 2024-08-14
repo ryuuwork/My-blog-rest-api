@@ -5,7 +5,7 @@ services:
     container_name: mysqldb
     image: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: Tu@n6666
+      MYSQL_ROOT_PASSWORD: ****
       MYSQL_DATABASE: myblog
     networks:
       spring-boot-mysql-network:
