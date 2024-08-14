@@ -5,6 +5,7 @@ import com.tuananhdo.payload.LoginDTO;
 import com.tuananhdo.payload.RegisterDTO;
 import com.tuananhdo.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,17 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import javax.management.relation.RoleNotFoundException;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/v1/auth")
 @Tag(name = "REST APIs for Authentication Resource")
 public class AuthController {
 
     private final AuthService authService;
-
-//    private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
 
     @PostMapping(value = {"/login", "/signin"})
     public ResponseEntity<JWTAuthResponse> login(@RequestBody LoginDTO loginDTO) {

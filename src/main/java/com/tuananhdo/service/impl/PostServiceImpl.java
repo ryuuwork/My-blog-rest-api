@@ -3,12 +3,13 @@ package com.tuananhdo.service.impl;
 import com.tuananhdo.entity.Category;
 import com.tuananhdo.entity.Post;
 import com.tuananhdo.exception.ResourceNotFoundException;
+import com.tuananhdo.mapper.PostMapper;
 import com.tuananhdo.payload.PostDTO;
 import com.tuananhdo.payload.PostResponse;
 import com.tuananhdo.repository.CategoryRepository;
 import com.tuananhdo.repository.PostRepository;
 import com.tuananhdo.service.PostService;
-import org.modelmapper.ModelMapper;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,17 +20,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
-    private final ModelMapper mapper;
+    private final PostMapper postMapper;
     private final CategoryRepository categoryRepository;
-
-    public PostServiceImpl(PostRepository postRepository, ModelMapper mapper, CategoryRepository categoryRepository) {
-        this.postRepository = postRepository;
-        this.mapper = mapper;
-        this.categoryRepository = categoryRepository;
-    }
 
     @Override
     public PostResponse getAllPost(int pageNo, int pageSize, String sortBy, String sortDir) {
@@ -38,7 +34,8 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
         Page<Post> posts = postRepository.findAll(pageable);
         List<Post> listOfPosts = posts.getContent();
-        List<PostDTO> contents = listOfPosts.stream().map(this::mapToPostDTO)
+        List<PostDTO> contents = listOfPosts.stream()
+                .map(postMapper::mapToPostDTO)
                 .collect(Collectors.toList());
         PostResponse postResponse = new PostResponse();
         postResponse.setContent(contents);
@@ -50,18 +47,14 @@ public class PostServiceImpl implements PostService {
         return postResponse;
     }
 
-    private PostDTO mapToPostDTO(Post post) {
-        return mapper.map(post, PostDTO.class);
-    }
-
     @Override
     public PostDTO createPost(PostDTO postDTO) {
         Category category = categoryRepository.findById(postDTO.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "id", postDTO.getCategoryId()));
-        Post post = mapper.map(postDTO, Post.class);
+        Post post = postMapper.mapToPost(postDTO);
         post.setCategory(category);
         Post savedPost = postRepository.save(post);
-        return mapper.map(savedPost, PostDTO.class);
+        return postMapper.mapToPostDTO(savedPost);
     }
 
     @Override
@@ -77,14 +70,14 @@ public class PostServiceImpl implements PostService {
         post.setContent(postDTO.getContent());
         post.setCategory(category);
         Post updatedPost = postRepository.save(post);
-        return mapToPostDTO(updatedPost);
+        return postMapper.mapToPostDTO(updatedPost);
     }
 
     @Override
     public PostDTO getPostById(long id) {
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Posts", "id", id));
-        return mapToPostDTO(post);
+        return postMapper.mapToPostDTO(post);
     }
 
     @Override
@@ -98,6 +91,6 @@ public class PostServiceImpl implements PostService {
     public List<PostDTO> getPostsByCategory(Long categoryId) {
         List<Post> posts = postRepository.findByCategoryId(categoryId);
         return posts.stream()
-                .map(this::mapToPostDTO).toList();
+                .map(postMapper::mapToPostDTO).toList();
     }
 }

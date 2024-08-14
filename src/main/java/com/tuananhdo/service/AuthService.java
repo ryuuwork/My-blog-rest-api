@@ -7,6 +7,5 @@ import javax.management.relation.RoleNotFoundException;
 
 public interface AuthService {
     String login(LoginDTO loginDTO);
-
     String register(RegisterDTO registerDTO) throws RoleNotFoundException;
 }
